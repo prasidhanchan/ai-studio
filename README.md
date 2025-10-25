@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://aistudio-unofficial.vercel.app/">
-    <img alt="AI Studio" src="https://raw.githubusercontent.com/prasidhanchan/ai-studio/refs/heads/master/app/favicon.ico" width="100">
+    <img alt="AI Studio" src="https://raw.githubusercontent.com/prasidhanchan/ai-studio/refs/heads/master/public/images/logo.png" width="100">
   </a>
 </p>
 
@@ -8,7 +8,7 @@
   AI Studio
 </h1>
 <p align="center">
-  <strong>AI Studio</strong> is an <strong>unofficial web app</strong> that lets you create high-quality AI images using <strong>Nano Banana (Gemini 2.5 Flash Image</strong> - completely <strong>without the watermark</strong>. Built for creators, developers, and AI enthusiasts who want to explore the full potential of Google's image generation technology in a simple and powerful way.
+  <strong>AI Studio</strong> is an <strong>unofficial web app</strong> that lets you create high-quality AI images using <strong>Nano Banana (Gemini 2.5 Flash Image</strong>. Built for creators and developers who want to generate images without any watermark.
 </p>
 
 ## Tech Stack
