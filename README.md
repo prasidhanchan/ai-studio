@@ -1,12 +1,15 @@
 <p align="center">
-  <a href="https://consumet.org/">
-    <img alt="Consumet" src="https://raw.githubusercontent.com/prasidhanchan/ai-studio/refs/heads/master/app/favicon.ico" width="100">
+  <a href="https://aistudio-unofficial.vercel.app/">
+    <img alt="AI Studio" src="https://raw.githubusercontent.com/prasidhanchan/ai-studio/refs/heads/master/app/favicon.ico" width="100">
   </a>
 </p>
 
-# AI Studio - Nano Banana Image Generator (No Watermark)
-
-**AI Studio** is an **unofficial web app** that lets you create high-quality AI images using **Nano Banana (Gemini 2.5 Flash Image)** - completely **without the watermark**. Built for creators, developers, and AI enthusiasts who want to explore the full potential of Google's image generation technology in a simple and powerful way.
+<h1 align="center">
+  AI Studio
+</h1>
+<p align="center">
+  <strong>AI Studio</strong> is an <strong>unofficial web app</strong> that lets you create high-quality AI images using <strong>Nano Banana (Gemini 2.5 Flash Image</strong> - completely <strong>without the watermark</strong>. Built for creators, developers, and AI enthusiasts who want to explore the full potential of Google's image generation technology in a simple and powerful way.
+</p>
 
 ## Tech Stack
 
