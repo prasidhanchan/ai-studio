@@ -79,7 +79,7 @@ export function Sidebar({
           value={localApiKey}
           onChange={(e) => setLocalApiKey(e.target.value)}
           placeholder="Enter your API key"
-          className="bg-offblack-secondary border-0 text-white text-xs! placeholder-gray-600 focus-visible:ring-0 focus-visible:border-0"
+          className="bg-offblack-secondary border-0 px-1 text-white text-xs! placeholder-gray-600 focus-visible:ring-0 focus-visible:border-0"
         />
         <Button
           onClick={handleApiKeySubmit}
@@ -104,7 +104,7 @@ export function Sidebar({
           value={systemInstructions}
           onChange={(e) => onSystemInstructionsChange(e.target.value)}
           placeholder="Add system instructions..."
-          className="w-full bg-offblack-secondary border-0 text-white text-xs! placeholder-gray-600 p-2 resize-none h-20 focus-visible:ring-0 focus-visible:border-0"
+          className="w-full bg-offblack-secondary border-0 px-1 text-white text-xs! placeholder-gray-600 p-2 resize-none h-20 focus-visible:ring-0 focus-visible:border-0"
         />
       </div>
 

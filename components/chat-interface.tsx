@@ -58,7 +58,7 @@ export function ChatInterface({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages.length]);
 
   useEffect(() => {
     if (inputRef.current) {
@@ -90,7 +90,7 @@ export function ChatInterface({
   }, [retryAfter]);
 
   const handleSendMessage = async (newMessage: string) => {
-    if (!newMessage.trim() || !isApiKeySet) return;
+    if (!newMessage.trim() || !isApiKeySet || isLoading) return;
 
     setError(null);
     setRetryAfter(null);
@@ -188,11 +188,11 @@ export function ChatInterface({
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <h2 className="flex gap-2 justify-center items-center text-5xl font-medium mb-2">
-                <Star className="size-[52px]" />
+              <h2 className="flex gap-2 justify-center items-center text-4xl sm:text-5xl font-medium mb-2">
+                <Star className="size-[42px] sm:size-[52px]" />
                 AI Studio
               </h2>
-              <p className="text-base text-gray-400">
+              <p className="text-sm sm:text-base text-gray-400">
                 Enter your API key in the sidebar to begin
               </p>
             </div>
@@ -245,9 +245,6 @@ export function ChatInterface({
                     style={{ animationDelay: "0.4s" }}
                   ></div>
                 </div>
-                {/* <span className="text-white text-sm">
-                  {elapsedTime.toFixed(1)}s
-                </span> */}
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -284,6 +281,25 @@ export function ChatInterface({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onPaste={(e) => {
+                  const items = e.clipboardData?.items;
+                  if (items) {
+                    for (let i = 0; i < items.length; i++) {
+                      const item = items[i];
+                      if (item.type.indexOf("image") !== -1) {
+                        const file = item.getAsFile();
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            const result = event.target?.result as string;
+                            setUploadedImage(result); // same as when selecting file
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }
+                    }
+                  }
+                }}
                 placeholder="Start typing a prompt"
                 disabled={
                   !isApiKeySet ||

@@ -45,13 +45,13 @@ export function Header({
   const isMobile = useIsMobile();
 
   return (
-    <header className="flex items-center justify-between border-b border-[#2a2a2a] px-6 py-4">
+    <header className="flex items-center justify-between gap-5 border-b border-[#2a2a2a] px-6 py-4">
       <Link href="/" className="flex flex-col">
         <h1 className="flex gap-2 justify-start items-center text-2xl font-semibold">
           <Star />
           AI Studio
         </h1>
-        <p className="text-sm text-white/50 mt-1">
+        <p className="text-xs sm:text-sm text-white/50 mt-1">
           Create Nano Banana images without watermark
         </p>
       </Link>

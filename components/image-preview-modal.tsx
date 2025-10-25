@@ -1,7 +1,8 @@
 "use client";
 
-import { X, Download } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Download from "@/public/icons/download";
 
 interface ImagePreviewModalProps {
   isOpen: boolean;
