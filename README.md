@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <a href="https://consumet.org/">
+    <img alt="Consumet" src="https://raw.githubusercontent.com/prasidhanchan/ai-studio/refs/heads/master/app/favicon.ico" width="100">
+  </a>
+</p>
+
+# AI Studio - Nano Banana Image Generator (No Watermark)
+
+**AI Studio** is an **unofficial web app** that lets you create high-quality AI images using **Nano Banana (Gemini 2.5 Flash Image)** - completely **without the watermark**. Built for creators, developers, and AI enthusiasts who want to explore the full potential of Google's image generation technology in a simple and powerful way.
+
+## Tech Stack
+
+- **Frontend:** Next.js
+- **Styling:** Tailwind CSS  
+- **Image Generation:** Nano Banana (Gemini 2.5 Flash Image) API  
+- **Hosting:** Vercel / Cloudflare (optional setup)  
 
 ## Getting Started
 
-First, run the development server:
-
+### 1. Clone the Repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/prasidhanchan/ai-studio.git
+cd ai-studio
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install Dependecies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Run the Development Server
+```bash
+npm run dev
+```
+### Vercel
+Host your own instance of AI Studio on Vercel using the button below.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/prasidhanchan/ai-studio)
 
-## Learn More
+# Disclaimer
+AI Studio is an unofficial project and is not affiliated with Google, Nano Banana, or Gemini in any way.
+This tool is built for educational and creative purposes only.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# License
+This project is licensed under the MIT License.
+See the [LICENSE](https://github.com/prasidhanchan/ai-studio/blob/master/LICENSE) file for details.
