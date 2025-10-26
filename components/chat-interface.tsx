@@ -10,6 +10,7 @@ import { AlertCircle, X } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 import Star from "@/public/icons/star";
 import Send from "@/public/icons/send";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 interface Message {
   id: string;
@@ -99,7 +100,10 @@ export function ChatInterface({
       id: Date.now().toString(),
       role: "user",
       content: newMessage,
-      images: uploadedImages || undefined,
+      images:
+        uploadedImages && uploadedImages.length > 0
+          ? uploadedImages
+          : undefined,
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -110,58 +114,131 @@ export function ChatInterface({
     setElapsedTime(0);
 
     try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          apiKey,
-          prompt: newMessage,
-          images: uploadedImages,
-          systemInstruction: systemInstructions,
-          temperature,
-          aspectRatio,
-          outputLength,
-          topP,
-          messages: messages.map((msg) => ({
-            role: msg.role,
-            content: msg.content,
-            images: msg.images,
-          })),
-        }),
+      // Initialize Gemini client
+      const client = new GoogleGenerativeAI(apiKey);
+      const model = client.getGenerativeModel({
+        model: "gemini-2.5-flash-image",
+        systemInstruction: systemInstructions || undefined,
       });
 
-      const data = await response.json();
+      // Build contents array
+      const contents: any[] = [];
 
-      if (data.success) {
-        const finalTime =
-          (Date.now() - (generationStartTime || Date.now())) / 1000;
-        const modelMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: "model",
-          content: data.text || "",
-          images: data.images || undefined,
-          generationTime: finalTime,
-        };
-        setMessages((prev) => [...prev, modelMessage]);
-      } else {
-        setError(data.error || "Failed to generate content");
-        if (data.retryAfter) {
-          setRetryAfter(data.retryAfter);
+      // Add previous messages to context
+      if (messages && messages.length > 0) {
+        for (const msg of messages) {
+          const parts: any[] = [];
+
+          // Add images if present
+          if (msg.images && msg.images.length > 0) {
+            for (const img of msg.images.slice(0, 5)) {
+              const base64 = img.split(",")[1];
+              parts.push({
+                inlineData: {
+                  mimeType: "image/png",
+                  data: base64,
+                },
+              });
+            }
+          }
+
+          // Add text
+          parts.push({ text: msg.content });
+
+          contents.push({
+            role: msg.role === "user" ? "user" : "model",
+            parts,
+          });
         }
-        // Remove the failed user message
-        setMessages((prev) => prev.slice(0, -1));
       }
-    } catch (error) {
+
+      // Add current message
+      const currentParts: any[] = [{ text: newMessage }];
+      if (uploadedImages && uploadedImages.length > 0) {
+        for (const img of uploadedImages.slice(0, 5)) {
+          const base64 = img.split(",")[1];
+          currentParts.unshift({
+            inlineData: {
+              mimeType: "image/png",
+              data: base64,
+            },
+          });
+        }
+      }
+      contents.push({ role: "user", parts: currentParts });
+
+      // Generation config
+      const generationConfig: any = {
+        temperature: temperature || 1,
+        topP: topP || 0.95,
+        responseModalities: ["TEXT", "IMAGE"],
+        imageConfig: aspectRatio !== "Auto" ? { aspectRatio } : undefined,
+      };
+      if (outputLength) {
+        generationConfig.maxOutputTokens = outputLength;
+      }
+
+      // Generate content
+      const result = await model.generateContent({
+        contents,
+        generationConfig,
+      });
+
+      const response = result.response;
+      const text = response.text();
+
+      // Extract generated images
+      let imageData = null;
+      if (response.candidates?.[0]?.content?.parts) {
+        for (const part of response.candidates[0].content.parts) {
+          if (part.inlineData) {
+            const mimeType = part.inlineData.mimeType || "image/png";
+            const base64 = part.inlineData.data;
+            imageData = `data:${mimeType};base64,${base64}`;
+            break;
+          }
+        }
+      }
+
+      // Add model response
+      const finalTime =
+        (Date.now() - (generationStartTime || Date.now())) / 1000;
+      const modelMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "model",
+        content: text || "",
+        images: imageData ? [imageData] : undefined,
+        generationTime: finalTime,
+      };
+      setMessages((prev) => [...prev, modelMessage]);
+    } catch (error: any) {
       console.error("Error:", error);
-      if (
-        error instanceof Error &&
-        error.message.includes("SyntaxError: Unexpected token 'R'")
-      ) {
-        setError("Selected image size is too large.");
-        setMessages((prev) => prev.slice(0, -1));
-        return;
+
+      let errorMessage = "Failed to generate content";
+      let retryAfter: number | null = null;
+
+      // Handle specific errors
+      if (error?.message?.includes("429") || error?.status === 429) {
+        errorMessage = "API quota exceeded. Please wait or upgrade your plan.";
+        const retryMatch = error?.message?.match(/retry in (\d+)/i);
+        if (retryMatch) {
+          retryAfter = Number.parseInt(retryMatch[1]);
+          setRetryAfter(retryAfter);
+        }
+      } else if (error?.message?.includes("401") || error?.status === 401) {
+        errorMessage = "Invalid API key. Please check your Gemini API key.";
+      } else if (error?.message?.includes("400") || error?.status === 400) {
+        errorMessage = "Invalid request. Please check your input.";
+      } else if (error?.message?.includes("CORS")) {
+        errorMessage =
+          "CORS error. The Gemini API may not support direct browser calls.";
+      } else {
+        errorMessage =
+          error?.message || "Network error. Please check your connection.";
       }
-      setError("Network error. Please check your connection and try again.");
+
+      setError(errorMessage);
+      // Remove the failed user message
       setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
@@ -292,8 +369,6 @@ export function ChatInterface({
                 onPaste={(e) => {
                   const items = e.clipboardData?.items;
                   if (items) {
-                    const pastedImages: string[] = [];
-
                     for (let i = 0; i < items.length; i++) {
                       const item = items[i];
                       if (item.type.indexOf("image") !== -1) {
