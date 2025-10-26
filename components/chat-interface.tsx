@@ -15,7 +15,7 @@ interface Message {
   id: string;
   role: "user" | "model";
   content: string;
-  image?: string;
+  images?: string[];
   isEditing?: boolean;
   generationTime?: number;
 }
@@ -41,7 +41,7 @@ export function ChatInterface({
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
@@ -99,12 +99,12 @@ export function ChatInterface({
       id: Date.now().toString(),
       role: "user",
       content: newMessage,
-      image: uploadedImage || undefined,
+      images: uploadedImages || undefined,
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
-    setUploadedImage(null);
+    setUploadedImages([]);
     setIsLoading(true);
     setGenerationStartTime(Date.now());
     setElapsedTime(0);
@@ -116,7 +116,7 @@ export function ChatInterface({
         body: JSON.stringify({
           apiKey,
           prompt: newMessage,
-          image: uploadedImage,
+          images: uploadedImages,
           systemInstruction: systemInstructions,
           temperature,
           aspectRatio,
@@ -125,7 +125,7 @@ export function ChatInterface({
           messages: messages.map((msg) => ({
             role: msg.role,
             content: msg.content,
-            image: msg.image,
+            images: msg.images,
           })),
         }),
       });
@@ -139,7 +139,7 @@ export function ChatInterface({
           id: (Date.now() + 1).toString(),
           role: "model",
           content: data.text || "",
-          image: data.image || undefined,
+          images: data.images || undefined,
           generationTime: finalTime,
         };
         setMessages((prev) => [...prev, modelMessage]);
@@ -272,7 +272,7 @@ export function ChatInterface({
         <div className="space-y-4">
           <div
             className={`flex flex-col gap-3 bg-offblack-secondary justify-center items-start ${
-              uploadedImage ? "rounded-3xl" : "rounded-full"
+              uploadedImages ? "rounded-3xl" : "rounded-full"
             } px-4 py-3`}
           >
             <div className="flex justify-end items-center w-full h-full">
@@ -284,6 +284,8 @@ export function ChatInterface({
                 onPaste={(e) => {
                   const items = e.clipboardData?.items;
                   if (items) {
+                    const pastedImages: string[] = [];
+
                     for (let i = 0; i < items.length; i++) {
                       const item = items[i];
                       if (item.type.indexOf("image") !== -1) {
@@ -292,7 +294,11 @@ export function ChatInterface({
                           const reader = new FileReader();
                           reader.onload = (event) => {
                             const result = event.target?.result as string;
-                            setUploadedImage(result); // same as when selecting file
+                            // Add the new image if we have less than 5
+                            setUploadedImages((prev) => {
+                              if (prev.length < 5) return [...prev, result];
+                              return prev;
+                            });
                           };
                           reader.readAsDataURL(file);
                         }
@@ -308,7 +314,10 @@ export function ChatInterface({
                 }
                 className="flex-1 text-white placeholder-gray-500 rounded-full border-0 resize-none focus-visible:border-0 focus-visible:ring-0 focus:outline-none focus:border-0 focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed min-h-full max-h-[120px]"
               />
-              <ImageUpload onImageUpload={setUploadedImage} />
+              <ImageUpload
+                images={uploadedImages}
+                onImageUpload={setUploadedImages}
+              />
               <Button
                 onClick={() => handleSendMessage(input)}
                 disabled={
@@ -323,19 +332,27 @@ export function ChatInterface({
               </Button>
             </div>
 
-            {uploadedImage && (
-              <div className="relative px-2 mt-2">
-                <img
-                  src={uploadedImage || "/placeholder.svg"}
-                  alt="Uploaded"
-                  className="w-full h-[200] object-cover rounded"
-                />
-                <button
-                  onClick={() => setUploadedImage(null)}
-                  className="absolute top-2 right-5 bg-black rounded-full size-8 cursor-pointer flex items-center justify-center text-white text-sm"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+            {uploadedImages.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2 px-2">
+                {uploadedImages.map((img, idx) => (
+                  <div key={idx} className="relative">
+                    <img
+                      src={img}
+                      alt={`Uploaded ${idx + 1}`}
+                      className="w-full h-[200] object-cover rounded"
+                    />
+                    <button
+                      onClick={() =>
+                        setUploadedImages((prev) =>
+                          prev.filter((_, i) => i !== idx)
+                        )
+                      }
+                      className="absolute top-2 right-2 bg-black rounded-full size-8 cursor-pointer flex items-center justify-center text-white text-sm"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>

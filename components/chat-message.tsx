@@ -18,7 +18,7 @@ interface Message {
   id: string;
   role: "user" | "model";
   content: string;
-  image?: string;
+  images?: string[];
   isEditing?: boolean;
   generationTime?: number;
 }
@@ -37,6 +37,7 @@ export function ChatMessage({
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(message.content);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleSave = () => {
@@ -44,10 +45,10 @@ export function ChatMessage({
     setIsEditing(false);
   };
 
-  const handleDownloadImage = () => {
-    if (!message.image) return;
+  const handleDownloadImage = (image: string) => {
+    if (!image) return;
     const link = document.createElement("a");
-    link.href = message.image;
+    link.href = image;
     link.download = `generated-image-${new Date()
       .toISOString()
       .slice(0, 10)}.png`;
@@ -60,8 +61,11 @@ export function ChatMessage({
     <>
       <ImagePreviewModal
         isOpen={isPreviewOpen}
-        imageUrl={message.image || ""}
-        onClose={() => setIsPreviewOpen(false)}
+        imageUrl={selectedImage || ""}
+        onClose={() => {
+          setIsPreviewOpen(false);
+          setSelectedImage(null);
+        }}
         timestamp={`Generated Image ${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString()}.png`}
       />
 
@@ -173,14 +177,22 @@ export function ChatMessage({
                   onChange={(e) => setEditedContent(e.target.value)}
                   className="border-0 text-white focus-visible:ring-0 p-0 rounded-none"
                 />
-                <img
-                  src={message.image || "/placeholder.svg"}
-                  alt="Generated"
-                  className="rounded-lg max-h-56 object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = "/placeholder.svg";
-                  }}
-                />
+
+                <div className="flex gap-5">
+                  {message.images &&
+                    message.images?.length > 0 &&
+                    message.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image || "/placeholder.svg"}
+                        alt="Generated"
+                        className="rounded-lg max-h-56 object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "/placeholder.svg";
+                        }}
+                      />
+                    ))}
+                </div>
               </div>
             ) : (
               <>
@@ -214,47 +226,55 @@ export function ChatMessage({
                   </Markdown>
                 </div>
 
-                {message.image && (
-                  <div
-                    className="mt-4 relative group cursor-pointer max-h-96"
-                    onClick={() => setIsPreviewOpen(true)}
-                  >
-                    <img
-                      src={message.image || "/placeholder.svg"}
-                      alt="Generated"
-                      className="rounded-lg max-h-56 object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = "/placeholder.svg";
-                      }}
-                    />
-                    <div className="absolute bottom-2 left-1 right-0 max-w-[90px] bg-offblack opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full flex justify-center gap-2 p-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
+                <div className="flex gap-5">
+                  {message.images &&
+                    message.images?.length > 0 &&
+                    message.images.map((image, index) => (
+                      <div
+                        key={index}
+                        className="mt-4 relative group cursor-pointer max-h-96"
+                        onClick={() => {
                           setIsPreviewOpen(true);
+                          setSelectedImage(image);
                         }}
-                        className="rounded-full"
-                        title="Fullscreen"
                       >
-                        <Fullscreen className="text-white" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownloadImage();
-                        }}
-                        className="rounded-full"
-                        title="Download"
-                      >
-                        <Download className="text-white" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                        <img
+                          src={image || "/placeholder.svg"}
+                          alt="Generated"
+                          className="rounded-lg max-h-56 object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = "/placeholder.svg";
+                          }}
+                        />
+                        <div className="absolute bottom-2 left-1 right-0 max-w-[90px] bg-offblack opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full flex justify-center gap-2 p-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsPreviewOpen(true);
+                            }}
+                            className="rounded-full"
+                            title="Fullscreen"
+                          >
+                            <Fullscreen className="text-white" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownloadImage(image);
+                            }}
+                            className="rounded-full"
+                            title="Download"
+                          >
+                            <Download className="text-white" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </>
             )}
           </div>
