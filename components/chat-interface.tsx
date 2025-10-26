@@ -153,6 +153,14 @@ export function ChatInterface({
       }
     } catch (error) {
       console.error("Error:", error);
+      if (
+        error instanceof Error &&
+        error.message.includes("SyntaxError: Unexpected token 'R'")
+      ) {
+        setError("Selected image size is too large.");
+        setMessages((prev) => prev.slice(0, -1));
+        return;
+      }
       setError("Network error. Please check your connection and try again.");
       setMessages((prev) => prev.slice(0, -1));
     } finally {
