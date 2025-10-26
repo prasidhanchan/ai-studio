@@ -357,7 +357,7 @@ export function ChatInterface({
         <div className="space-y-4">
           <div
             className={`flex flex-col gap-3 bg-offblack-secondary justify-center items-start ${
-              uploadedImages ? "rounded-3xl" : "rounded-full"
+              uploadedImages.length > 0 ? "rounded-3xl" : "rounded-full"
             } px-4 py-3`}
           >
             <div className="flex justify-end items-center w-full h-full">

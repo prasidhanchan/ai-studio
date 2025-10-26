@@ -252,6 +252,7 @@ export function ChatMessage({
                             size="icon"
                             onClick={(e) => {
                               e.stopPropagation();
+                              setSelectedImage(image);
                               setIsPreviewOpen(true);
                             }}
                             className="rounded-full"
