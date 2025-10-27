@@ -3,14 +3,11 @@
 import type React from "react";
 
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { ChatMessage } from "./chat-message";
-import { ImageUpload } from "./image-upload";
 import { AlertCircle, X } from "lucide-react";
-import { Textarea } from "./ui/textarea";
 import Star from "@/public/icons/star";
-import Send from "@/public/icons/send";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { PromptInput } from "./prompt-input";
 
 interface Message {
   id: string;
@@ -90,7 +87,7 @@ export function ChatInterface({
     }
   }, [retryAfter]);
 
-  const handleSendMessage = async (newMessage: string) => {
+  const handleSendMessage = async (newMessage: string, images: string[]) => {
     if (!newMessage.trim() || !isApiKeySet || isLoading) return;
 
     setError(null);
@@ -100,10 +97,7 @@ export function ChatInterface({
       id: Date.now().toString(),
       role: "user",
       content: newMessage,
-      images:
-        uploadedImages && uploadedImages.length > 0
-          ? uploadedImages
-          : undefined,
+      images: images && images.length > 0 ? images : undefined,
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -154,8 +148,8 @@ export function ChatInterface({
 
       // Add current message
       const currentParts: any[] = [{ text: newMessage }];
-      if (uploadedImages && uploadedImages.length > 0) {
-        for (const img of uploadedImages.slice(0, 5)) {
+      if (images && images.length > 0) {
+        for (const img of images.slice(0, 5)) {
           const base64 = img.split(",")[1];
           currentParts.unshift({
             inlineData: {
@@ -262,7 +256,7 @@ export function ChatInterface({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage(input);
+      handleSendMessage(input, uploadedImages);
     }
   };
 
@@ -298,7 +292,7 @@ export function ChatInterface({
 
                     if (!prevContent) return;
 
-                    handleSendMessage(prevContent);
+                    handleSendMessage(prevContent, message.images || []);
 
                     // Delete Messages including the current one
                     setMessages((prev) =>
@@ -307,7 +301,7 @@ export function ChatInterface({
                     return;
                   }
 
-                  handleSendMessage(message.content);
+                  handleSendMessage(message.content, message.images || []);
 
                   // Delete Messages after the current one
                   setMessages((prev) =>
@@ -355,90 +349,17 @@ export function ChatInterface({
       {/* Input Area */}
       <div className="fixed lg:relative bottom-0 w-full p-6">
         <div className="space-y-4">
-          <div
-            className={`flex flex-col gap-3 bg-offblack-secondary justify-center items-start ${
-              uploadedImages.length > 0 ? "rounded-3xl" : "rounded-full"
-            } px-4 py-3`}
-          >
-            <div className="flex justify-end items-center w-full h-full">
-              <Textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onPaste={(e) => {
-                  const items = e.clipboardData?.items;
-                  if (items) {
-                    for (let i = 0; i < items.length; i++) {
-                      const item = items[i];
-                      if (item.type.indexOf("image") !== -1) {
-                        const file = item.getAsFile();
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            const result = event.target?.result as string;
-                            // Add the new image if we have less than 5
-                            setUploadedImages((prev) => {
-                              if (prev.length < 5) return [...prev, result];
-                              return prev;
-                            });
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }
-                    }
-                  }
-                }}
-                placeholder="Start typing a prompt"
-                disabled={
-                  !isApiKeySet ||
-                  isLoading ||
-                  (retryAfter !== null && retryAfter > 0)
-                }
-                className="flex-1 text-white placeholder-gray-500 rounded-full border-0 resize-none focus-visible:border-0 focus-visible:ring-0 focus:outline-none focus:border-0 focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed min-h-full max-h-[120px]"
-              />
-              <ImageUpload
-                images={uploadedImages}
-                onImageUpload={setUploadedImages}
-              />
-              <Button
-                onClick={() => handleSendMessage(input)}
-                disabled={
-                  !input.trim() ||
-                  !isApiKeySet ||
-                  isLoading ||
-                  (retryAfter !== null && retryAfter > 0)
-                }
-                className="bg-yellow-400 hover:bg-yellow-600 text-black font-medium rounded-full size-8"
-              >
-                <Send />
-              </Button>
-            </div>
-
-            {uploadedImages.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2 px-2">
-                {uploadedImages.map((img, idx) => (
-                  <div key={idx} className="relative">
-                    <img
-                      src={img}
-                      alt={`Uploaded ${idx + 1}`}
-                      className="w-full h-[200] object-cover rounded"
-                    />
-                    <button
-                      onClick={() =>
-                        setUploadedImages((prev) =>
-                          prev.filter((_, i) => i !== idx)
-                        )
-                      }
-                      className="absolute top-2 right-2 bg-black rounded-full size-8 cursor-pointer flex items-center justify-center text-white text-sm"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <PromptInput
+            input={input}
+            setInput={setInput}
+            handleKeyDown={handleKeyDown}
+            handleSendMessage={handleSendMessage}
+            isApiKeySet={isApiKeySet}
+            isLoading={isLoading}
+            retryAfter={retryAfter}
+            uploadedImages={uploadedImages}
+            setUploadedImages={setUploadedImages}
+          />
         </div>
       </div>
     </div>

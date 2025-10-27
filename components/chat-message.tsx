@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ImagePreviewModal } from "./image-preview-modal";
 import Star from "@/public/icons/star";
 import Delete from "@/public/icons/delete";
@@ -13,6 +12,7 @@ import Fullscreen from "@/public/icons/fullscreen";
 import Download from "@/public/icons/download";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Textarea } from "./ui/textarea";
 
 interface Message {
   id: string;
@@ -172,10 +172,10 @@ export function ChatMessage({
 
             {isEditing ? (
               <div className="space-y-2">
-                <Input
+                <Textarea
                   value={editedContent}
                   onChange={(e) => setEditedContent(e.target.value)}
-                  className="border-0 text-white focus-visible:ring-0 p-0 rounded-none"
+                  className="border-0 text-white focus-visible:ring-0 p-0 resize-none min-h-0"
                 />
 
                 <div className="flex gap-5">
@@ -196,7 +196,7 @@ export function ChatMessage({
               </div>
             ) : (
               <>
-                <div className="min-w-full text-sm text-white prose">
+                <div className="min-w-full text-sm text-white prose pb-2">
                   <Markdown
                     remarkPlugins={[remarkGfm]}
                     components={{
