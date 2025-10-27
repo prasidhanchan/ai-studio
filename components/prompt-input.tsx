@@ -65,7 +65,7 @@ export function PromptInput({
       } px-4 py-3`}
     >
       {isDragging && (
-        <div className="absolute inset-0 rounded-full border-5 border-dashed border-blue-400 pointer-events-none" />
+        <div className={`absolute inset-0 ${uploadedImages.length > 0 ? "rounded-3xl" : "rounded-4xl"} border-5 border-dashed border-blue-400 pointer-events-none`} />
       )}
       <div className={`flex justify-end items-center w-full h-full`}>
         <div
