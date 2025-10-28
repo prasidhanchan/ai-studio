@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,8 @@ interface SidebarProps {
   onTemperatureChange: (value: number) => void;
   aspectRatio: string;
   onAspectRatioChange: (value: string) => void;
+  stopSequences: string[];
+  onStopSequencesChange: (sequences: string[]) => void;
   outputLength: number;
   onOutputLengthChange: (value: number) => void;
   topP: number;
@@ -40,6 +42,8 @@ export function Sidebar({
   onTemperatureChange,
   aspectRatio,
   onAspectRatioChange,
+  stopSequences,
+  onStopSequencesChange,
   outputLength,
   onOutputLengthChange,
   topP,
@@ -50,15 +54,30 @@ export function Sidebar({
 }: SidebarProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [localApiKey, setLocalApiKey] = useState(apiKey);
+  const [stopSequenceInput, setStopSequenceInput] = useState("");
 
   const handleApiKeySubmit = () => {
     onApiKeyChange(localApiKey);
   };
 
+  const handleAddStopSequence = () => {
+    if (
+      stopSequenceInput.trim() &&
+      !stopSequences.includes(stopSequenceInput.trim())
+    ) {
+      onStopSequencesChange([...stopSequences, stopSequenceInput.trim()]);
+      setStopSequenceInput("");
+    }
+  };
+
+  const handleRemoveStopSequence = (sequence: string) => {
+    onStopSequencesChange(stopSequences.filter((s) => s !== sequence));
+  };
+
   return (
     <div
       className={cn(
-        "w-full lg:w-75 border-l border-[#2a2a2a] overflow-y-auto p-4 space-y-2 scrollbar",
+        "w-full lg:w-75 border-l border-[#2a2a2a] overflow-y-auto p-4 pb-10 space-y-2 scrollbar",
         className
       )}
     >
@@ -133,7 +152,7 @@ export function Sidebar({
           <SelectTrigger className="bg-offblack-secondary border-offblack text-white w-full">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-offblack-secondary border-offblack">
+          <SelectContent className="bg-[#1c1c1c] border-offblack-secondary">
             <SelectItem value="Auto">Auto</SelectItem>
             <SelectItem value="1:1">1:1</SelectItem>
             <SelectItem value="9:16">9:16</SelectItem>
@@ -142,6 +161,9 @@ export function Sidebar({
             <SelectItem value="4:3">4:3</SelectItem>
             <SelectItem value="3:2">3:2</SelectItem>
             <SelectItem value="2:3">2:3</SelectItem>
+            <SelectItem value="5:4">5:4</SelectItem>
+            <SelectItem value="4:5">4:5</SelectItem>
+            <SelectItem value="21:9">21:9</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -162,14 +184,55 @@ export function Sidebar({
 
         {showAdvanced && (
           <div className="space-y-4 mt-4">
+            {/* Stop Sequence */}
+            <div className="space-y-2 w-full">
+              <div className="flex justify-between items-center gap-2 w-full">
+                <label className="text-sm font-medium w-full">
+                  Add stop sequence
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    value={stopSequenceInput}
+                    onChange={(e) => setStopSequenceInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleAddStopSequence();
+                      }
+                    }}
+                    placeholder="Add stop..."
+                    className="bg-offblack border-offblack text-white focus-visible:ring-0 focus-visible:border-offblack w-[90%]"
+                  />
+                </div>
+              </div>
+              {stopSequences.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {stopSequences.map((sequence) => (
+                    <div
+                      key={sequence}
+                      className="bg-offblack-secondary border border-[#2a2a2a] rounded-full px-2 py-1 flex items-center gap-2 text-sm"
+                    >
+                      <span>{sequence}</span>
+                      <button
+                        onClick={() => handleRemoveStopSequence(sequence)}
+                        className="text-gray-400 hover:text-white transition cursor-pointer"
+                      >
+                        <X className="w-4 h-4 text-white" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Output Length */}
-            <div className="flex flex-col gap-2">
+            <div className="flex justify-between items-center gap-2">
               <label className="text-sm">Output length</label>
               <Input
                 type="text"
                 value={outputLength}
                 onChange={(e) => onOutputLengthChange(Number(e.target.value))}
-                className="bg-offblack border-offblack text-white focus-visible:ring-0 focus-visible:border-offblack"
+                className="bg-offblack border-offblack text-white focus-visible:ring-0 focus-visible:border-offblack w-[50%]"
               />
             </div>
 

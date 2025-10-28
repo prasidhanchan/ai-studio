@@ -19,6 +19,8 @@ interface HeaderProps {
   setTemperature: (value: number) => void;
   aspectRatio: string;
   setAspectRatio: (value: string) => void;
+  stopSequences: string[];
+  setStopSequences: (sequences: string[]) => void;
   outputLength: number;
   setOutputLength: (value: number) => void;
   topP: number;
@@ -35,6 +37,8 @@ export function Header({
   setTemperature,
   aspectRatio,
   setAspectRatio,
+  stopSequences,
+  setStopSequences,
   outputLength,
   setOutputLength,
   topP,
@@ -80,6 +84,8 @@ export function Header({
               onTemperatureChange={setTemperature}
               aspectRatio={aspectRatio}
               onAspectRatioChange={setAspectRatio}
+              stopSequences={stopSequences}
+              onStopSequencesChange={setStopSequences}
               outputLength={outputLength}
               onOutputLengthChange={setOutputLength}
               topP={topP}

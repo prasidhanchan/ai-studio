@@ -23,6 +23,7 @@ interface ChatInterfaceProps {
   isApiKeySet: boolean;
   temperature: number;
   aspectRatio: string;
+  stopSequences: string[];
   outputLength: number;
   topP: number;
   systemInstructions: string;
@@ -33,6 +34,7 @@ export function ChatInterface({
   isApiKeySet,
   temperature,
   aspectRatio,
+  stopSequences,
   outputLength,
   topP,
   systemInstructions,
@@ -165,6 +167,7 @@ export function ChatInterface({
       const generationConfig: any = {
         temperature: temperature || 1,
         topP: topP || 0.95,
+        stopSequences: stopSequences.length > 0 ? stopSequences : undefined,
         responseModalities: ["TEXT", "IMAGE"],
         imageConfig: aspectRatio !== "Auto" ? { aspectRatio } : undefined,
       };
@@ -313,7 +316,7 @@ export function ChatInterface({
             {isLoading && (
               <div className="flex flex-col items-start gap-4 border border-transparent hover:border-[#3d3d3d] rounded-lg p-4 w-full">
                 <p className="text-xs text-gray-400 mb-2">Model</p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <div className="w-2 h-2 bg-gray-200 rounded-full animate-bounce"></div>
                   <div
                     className="w-2 h-2 bg-gray-300 rounded-full animate-bounce"

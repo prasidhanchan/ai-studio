@@ -10,6 +10,7 @@ export default function Home() {
   const [isApiKeySet, setIsApiKeySet] = useState(false);
   const [temperature, setTemperature] = useState(1);
   const [aspectRatio, setAspectRatio] = useState("Auto");
+  const [stopSequences, setStopSequences] = useState<string[]>([]);
   const [outputLength, setOutputLength] = useState(8192);
   const [topP, setTopP] = useState(0.95);
   const [systemInstructions, setSystemInstructions] = useState("");
@@ -31,6 +32,8 @@ export default function Home() {
           setTemperature={setTemperature}
           aspectRatio={aspectRatio}
           setAspectRatio={setAspectRatio}
+          stopSequences={stopSequences}
+          setStopSequences={setStopSequences}
           outputLength={outputLength}
           setOutputLength={setOutputLength}
           topP={topP}
@@ -43,6 +46,7 @@ export default function Home() {
           isApiKeySet={isApiKeySet}
           temperature={temperature}
           aspectRatio={aspectRatio}
+          stopSequences={stopSequences}
           outputLength={outputLength}
           topP={topP}
           systemInstructions={systemInstructions}
@@ -58,6 +62,8 @@ export default function Home() {
         onTemperatureChange={setTemperature}
         aspectRatio={aspectRatio}
         onAspectRatioChange={setAspectRatio}
+        stopSequences={stopSequences}
+        onStopSequencesChange={setStopSequences}
         outputLength={outputLength}
         onOutputLengthChange={setOutputLength}
         topP={topP}
