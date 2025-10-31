@@ -225,7 +225,7 @@ export function ChatInterface({
       } else if (error?.message?.includes("401") || error?.status === 401) {
         errorMessage = "Invalid API key. Please check your Gemini API key.";
       } else if (error?.message?.includes("400") || error?.status === 400) {
-        errorMessage = "Invalid request. Please check your input.";
+        errorMessage = "Invalid request. Please pass a valid API key.";
       } else if (error?.message?.includes("CORS")) {
         errorMessage =
           "CORS error. The Gemini API may not support direct browser calls.";

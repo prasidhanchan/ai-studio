@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -11,9 +11,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown, Trash2, X } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+import EyeOpen from "@/public/icons/eye-open";
 
 interface SidebarProps {
   apiKey: string;
@@ -55,9 +66,40 @@ export function Sidebar({
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [localApiKey, setLocalApiKey] = useState(apiKey);
   const [stopSequenceInput, setStopSequenceInput] = useState("");
+  const [savedApiKey, setSavedApiKey] = useState<string>("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showKey, setShowKey] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("ai_studio_key");
+    if (stored) {
+      try {
+        setSavedApiKey(stored);
+        setLocalApiKey(stored);
+        if (stored) {
+          onApiKeyChange(stored);
+        }
+      } catch (e) {
+        console.error("Failed to parse saved API key:", e);
+      }
+    }
+  }, []);
 
   const handleApiKeySubmit = () => {
-    onApiKeyChange(localApiKey);
+    if (!localApiKey.trim()) return;
+
+    const updated = localApiKey.trim();
+    localStorage.setItem("ai_studio_key", updated);
+    setSavedApiKey(updated);
+    onApiKeyChange(updated);
+  };
+
+  const handleDeleteApiKey = () => {
+    localStorage.removeItem("ai_studio_key");
+    setSavedApiKey("");
+    onApiKeyChange("");
+    setLocalApiKey("");
+    setShowDeleteDialog(false);
   };
 
   const handleAddStopSequence = () => {
@@ -93,19 +135,38 @@ export function Sidebar({
       {/* API Key Input */}
       <div className="flex flex-col gap-y-2 bg-offblack-secondary border border-offblack p-3 rounded-xl">
         <span className="text-sm">Gemini API Key</span>
-        <Input
-          type="password"
-          value={localApiKey}
-          onChange={(e) => setLocalApiKey(e.target.value)}
-          placeholder="Enter your API key"
-          className="bg-offblack-secondary border-0 px-1 text-white text-xs! placeholder-gray-600 focus-visible:ring-0 focus-visible:border-0"
-        />
+
+        <div className="flex justify-start items-center gap-2">
+          <Input
+            type={showKey ? "text" : "password"}
+            value={localApiKey}
+            onChange={(e) => setLocalApiKey(e.target.value)}
+            placeholder="Enter your API key"
+            className="bg-offblack-secondary border-0 px-1 text-white text-xs! placeholder-gray-600 focus-visible:ring-0 focus-visible:border-0 "
+          />
+          <EyeOpen
+            className="size-5 cursor-pointer"
+            onClick={() => setShowKey(!showKey)}
+          />
+        </div>
         <Button
           onClick={handleApiKeySubmit}
           className="w-full hover:bg-white-600 text-black font-medium mt-2"
         >
           {isApiKeySet ? "Update Key" : "Set API Key"}
         </Button>
+
+        {savedApiKey && (
+          <Button
+            onClick={() => setShowDeleteDialog(true)}
+            variant="destructive"
+            className="w-full text-xs flex items-center justify-center gap-2"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete API Key
+          </Button>
+        )}
+
         {isApiKeySet && (
           <p className="text-xs text-green-500 w-full text-center mt-1">
             API Key configured
@@ -254,6 +315,31 @@ export function Sidebar({
           </div>
         )}
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="bg-[#1c1c1c] border border-offblack-secondary">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              Delete API Key?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This action cannot be undone. The API key will be permanently
+              deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-offblack-secondary border-offblack text-white hover:bg-offblack hover:text-white/80">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteApiKey}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
