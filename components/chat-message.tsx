@@ -97,7 +97,7 @@ export function ChatMessage({
                     onClick={onReSubmit}
                     size="icon"
                     variant="ghost"
-                    className="text-gray-400 hover:text-yellow-400 hover:bg-white/10 rounded-full"
+                    className="text-gray-400 hover:text-blue-400 hover:bg-white/10 rounded-full"
                     title="Resend"
                   >
                     <Star />
@@ -129,7 +129,7 @@ export function ChatMessage({
                     onClick={onReSubmit}
                     size="icon"
                     variant="ghost"
-                    className="text-gray-400 hover:text-yellow-400 hover:bg-white/10 rounded-full"
+                    className="text-gray-400 hover:text-blue-400 hover:bg-white/10 rounded-full"
                     title="Resend"
                   >
                     <Star />

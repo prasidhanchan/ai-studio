@@ -1,12 +1,17 @@
 "use client";
 
-import type React from "react";
-
 import { useState, useRef, useEffect } from "react";
 import { ChatMessage } from "./chat-message";
 import { AlertCircle, X } from "lucide-react";
 import Star from "@/public/icons/star";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+  GenerateContentConfig,
+  GenerateContentParameters,
+  GoogleGenAI,
+  Tool,
+  type Content,
+  type Part,
+} from "@google/genai";
 import { PromptInput } from "./prompt-input";
 
 interface Message {
@@ -20,9 +25,12 @@ interface Message {
 
 interface ChatInterfaceProps {
   apiKey: string;
+  selectedModel: string;
   isApiKeySet: boolean;
   temperature: number;
   aspectRatio: string;
+  resolution: string;
+  enableGrounding: boolean;
   stopSequences: string[];
   outputLength: number;
   topP: number;
@@ -31,9 +39,12 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({
   apiKey,
+  selectedModel,
   isApiKeySet,
   temperature,
   aspectRatio,
+  resolution,
+  enableGrounding,
   stopSequences,
   outputLength,
   topP,
@@ -51,6 +62,8 @@ export function ChatInterface({
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const tools: Tool[] = [{ googleSearch: {} }];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -111,19 +124,15 @@ export function ChatInterface({
 
     try {
       // Initialize Gemini client
-      const client = new GoogleGenerativeAI(apiKey);
-      const model = client.getGenerativeModel({
-        model: "gemini-2.5-flash-image",
-        systemInstruction: systemInstructions || undefined,
-      });
+      const client = new GoogleGenAI({ apiKey });
 
       // Build contents array
-      const contents: any[] = [];
+      const contents: Content[] = [];
 
       // Add previous messages to context
       if (messages && messages.length > 0) {
         for (const msg of messages) {
-          const parts: any[] = [];
+          const parts: Part[] = [];
 
           // Add images if present
           if (msg.images && msg.images.length > 0) {
@@ -134,12 +143,16 @@ export function ChatInterface({
                   mimeType: "image/png",
                   data: base64,
                 },
+                thoughtSignature: "skip_thought_signature_validator", // Workaround for Gemini 3
               });
             }
           }
 
           // Add text
-          parts.push({ text: msg.content });
+          parts.push({
+            text: msg.content,
+            thoughtSignature: "skip_thought_signature_validator", // Workaround for Gemini 3
+          });
 
           contents.push({
             role: msg.role === "user" ? "user" : "model",
@@ -164,30 +177,44 @@ export function ChatInterface({
       contents.push({ role: "user", parts: currentParts });
 
       // Generation config
-      const generationConfig: any = {
+      const config: GenerateContentConfig = {
         temperature: temperature || 1,
         topP: topP || 0.95,
         stopSequences: stopSequences.length > 0 ? stopSequences : undefined,
         responseModalities: ["TEXT", "IMAGE"],
-        imageConfig: aspectRatio !== "Auto" ? { aspectRatio } : undefined,
+        imageConfig: {
+          aspectRatio: aspectRatio !== "Auto" ? aspectRatio : undefined,
+          imageSize:
+            selectedModel === "gemini-3-pro-image-preview"
+              ? resolution
+              : undefined,
+        },
+        systemInstruction: [{ text: systemInstructions }],
+        tools:
+          enableGrounding && selectedModel === "gemini-3-pro-image-preview"
+            ? tools
+            : undefined,
       };
+
+      const generationConfig: GenerateContentParameters = {
+        model: selectedModel,
+        contents,
+        config,
+      };
+
       if (outputLength) {
-        generationConfig.maxOutputTokens = outputLength;
+        config.maxOutputTokens = outputLength;
       }
 
       // Generate content
-      const result = await model.generateContent({
-        contents,
-        generationConfig,
-      });
+      const result = await client.models.generateContent(generationConfig);
 
-      const response = result.response;
-      const text = response.text();
+      const text = result.text;
 
       // Extract generated images
       let imageData = null;
-      if (response.candidates?.[0]?.content?.parts) {
-        for (const part of response.candidates[0].content.parts) {
+      if (result.candidates?.[0]?.content?.parts) {
+        for (const part of result.candidates[0].content.parts) {
           if (part.inlineData) {
             const mimeType = part.inlineData.mimeType || "image/png";
             const base64 = part.inlineData.data;

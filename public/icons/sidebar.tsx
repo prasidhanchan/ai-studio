@@ -11,9 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Banana, ChevronDown, Trash2, X } from "lucide-react";
-import { Textarea } from "./ui/textarea";
+import { ChevronDown, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import EyeOpen from "@/public/icons/eye-open";
+import { Textarea } from "@/components/ui/textarea";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,31 +24,22 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "./ui/alert-dialog";
-import EyeOpen from "@/public/icons/eye-open";
-import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "./ui/drawer";
-import NanoBanana from "@/public/icons/nano-banana";
-import Star from "@/public/icons/star";
-import Info from "@/public/icons/info";
-import Brain from "@/public/icons/brain";
-import { Switch } from "./ui/switch";
-import Google from "@/public/icons/google";
-import Close from "@/public/icons/close";
+} from "@/components/ui/alert-dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 interface SidebarProps {
   apiKey: string;
   onApiKeyChange: (key: string) => void;
-  model: string;
-  onModelChange: (model: string) => void;
   isApiKeySet: boolean;
   temperature: number;
   onTemperatureChange: (value: number) => void;
   aspectRatio: string;
   onAspectRatioChange: (value: string) => void;
-  resolution: string;
-  onResolutionChange: (resolution: string) => void;
-  enableGrounding: boolean;
-  onEnableGrounding: (enable: boolean) => void;
   stopSequences: string[];
   onStopSequencesChange: (sequences: string[]) => void;
   outputLength: number;
@@ -64,16 +56,16 @@ const models = [
     name: "Gemini 3 Pro Image Preview",
     codeName: "Nano Banana Pro",
     model: "gemini-3-pro-image-preview",
-    costText: "Text • Input: $2.00 / Output: $12.00",
-    costImage: "Image (*Output per image) • Input: $2.00 / Output: $0.134",
+    costText: "Text Input: $2.00 / Output: $12.00",
+    costImage: "Image (*Output per image) Input: $2.00 / Output: $0.134",
     knowledge: "Jan 2025",
   },
   {
     name: "Gemini 2.5 Flash Image",
     codeName: "Nano Banana",
     model: "gemini-2.5-flash-image",
-    costText: "Text • Input: $0.30 / Output: $2.50",
-    costImage: "Image (*Output per image) • Input: $0.30 / Output: $0.039",
+    costText: "Text Input: $0.30 / Output: $2.50",
+    costImage: "Image (*Output per image) Input: $0.30 / Output: $0.039",
     knowledge: "Jun 2025",
   },
 ];
@@ -81,19 +73,13 @@ const models = [
 export function Sidebar({
   apiKey,
   onApiKeyChange,
-  model,
-  onModelChange,
   isApiKeySet,
   temperature,
   onTemperatureChange,
   aspectRatio,
   onAspectRatioChange,
-  resolution,
-  onResolutionChange,
   stopSequences,
   onStopSequencesChange,
-  enableGrounding,
-  onEnableGrounding,
   outputLength,
   onOutputLengthChange,
   topP,
@@ -102,10 +88,8 @@ export function Sidebar({
   onSystemInstructionsChange,
   className,
 }: SidebarProps) {
-  const [selectedModel, setSelectedModel] = useState(model);
-  const [open, setOpen] = useState(false);
+  const [selectedModel, setSelectedModel] = useState(models[0].model);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [showTools, setShowTools] = useState(true);
   const [localApiKey, setLocalApiKey] = useState(apiKey);
   const [stopSequenceInput, setStopSequenceInput] = useState("");
   const [savedApiKey, setSavedApiKey] = useState<string>("");
@@ -117,7 +101,6 @@ export function Sidebar({
     const storedModel = localStorage.getItem("ai_studio_model");
     if (storedModel) {
       setSelectedModel(storedModel);
-      onModelChange(storedModel);
     } else {
       localStorage.setItem("ai_studio_model", selectedModel);
     }
@@ -152,12 +135,6 @@ export function Sidebar({
     setShowDeleteDialog(false);
   };
 
-  const handleModelSelect = (model: string) => {
-    localStorage.setItem("ai_studio_model", model);
-    setSelectedModel(model);
-    onModelChange(model);
-  };
-
   const handleAddStopSequence = () => {
     if (
       stopSequenceInput.trim() &&
@@ -180,76 +157,34 @@ export function Sidebar({
       )}
     >
       {/* Model Info */}
-      <Drawer direction="right" open={open} onOpenChange={setOpen}>
+      <Drawer direction="right">
         <DrawerTrigger className="cursor-pointer">
           <div className="flex flex-col justify-center items-start text-start space-y-1 bg-offblack border border-offblack p-3 rounded-xl">
-            {selectedModel ? (
-              <h3 className="text-sm mb-2">
-                {
-                  models.find((model) => model.model === selectedModel)
-                    ?.codeName
-                }
-              </h3>
-            ) : (
-              <div className="h-6 bg-gray-400 rounded-lg w-[50%] animate-pulse" />
-            )}
-            {selectedModel ? (
-              <p className="text-xs text-white/40">{selectedModel}</p>
-            ) : (
-              <div className="h-4 bg-gray-400 rounded-md w-[80%] animate-pulse" />
-            )}
+            <h3 className="text-sm mb-2">Nano Banana</h3>
+            <p className="text-xs text-white/40">gemini-2.5-flash-image</p>
             <p className="text-xs text-white/40">
               State-of-the-art image generation and editing model.
             </p>
           </div>
         </DrawerTrigger>
-        <DrawerContent className="min-w-full md:min-w-auto md:max-w-md!">
+        <DrawerContent className="max-w-md!">
           <div className="flex flex-col justify-center items-start gap-4 p-4">
-            <h1 className="flex justify-between items-center font-medium w-full">
-              Model Selection{" "}
-              <button onClick={() => setOpen(false)} className="cursor-pointer">
-                <Close className="size-4" />
-              </button>
-            </h1>
             {models.map((model) => (
               <div
-                key={model.model}
-                onClick={() => {
-                  handleModelSelect(model.model);
-                  setOpen(false);
-                }}
-                className={`${
-                  model.model === selectedModel ? "bg-[#333232]" : "bg-offblack"
-                } flex flex-col justify-center items-start cursor-pointer text-start hover:bg-[#353535] space-y-1 border border-offblack p-3 rounded-xl w-full transition-colors`}
+                onClick={() => setSelectedModel(model.model)}
+                className="flex flex-col justify-center items-start cursor-pointer text-start space-y-1 bg-offblack border border-offblack p-3 rounded-xl w-full"
               >
-                <div className="flex justify-start items-center gap-2 mb-4">
-                  <div className="flex justify-center items-center rounded-lg p-1 size-9 bg-gray-700">
-                    <NanoBanana className="size-4.5" />
-                  </div>
-
-                  <h3 className="flex flex-col justify-center items-start text-sm">
-                    {model.codeName}
-                    <p className="text-[11px] text-gray-400">{model.model}</p>
-                  </h3>
+                <div className=" mb-4">
+                  <h3 className="text-sm">{model.codeName}</h3>
+                  <p className="text-[11px] text-gray-400">{model.model}</p>
                 </div>
-                <p className="flex justify-center items-center gap-1.5 text-xs text-gray-400">
-                  <Star className="size-3" /> {model.name}
+                <p className="text-[11px] text-gray-400">
+                  State-of-the-art image generation and editing model.
                 </p>
-                <p className="flex justify-center items-center gap-1.5 text-xs text-gray-400">
-                  <Info className="size-3" /> State-of-the-art image generation
-                  and editing model.
-                </p>
-                <p className="flex justify-center items-center gap-1.5 text-xs text-gray-400">
-                  <span className="mx-0.5">$</span>
-                  {model.costText}
-                </p>
-                <p className="flex justify-center items-center gap-1.5 text-xs text-gray-400">
-                  <span className="mx-0.5">$</span>
-                  {model.costImage}
-                </p>
-                <p className="flex justify-center items-center gap-1.5 text-xs text-gray-400">
-                  <Brain className="size-3" /> Knowledge cut off:{" "}
-                  {model.knowledge}
+                <p className="text-xs text-gray-400">{model.costText}</p>
+                <p className="text-xs text-gray-400">{model.costImage}</p>
+                <p className="text-xs text-gray-400">
+                  Knowledge cut off: {model.knowledge}
                 </p>
               </div>
             ))}
@@ -354,57 +289,6 @@ export function Sidebar({
           </SelectContent>
         </Select>
       </div>
-
-      {/* Resolution */}
-      {selectedModel === "gemini-3-pro-image-preview" && (
-        <div className="flex flex-col gap-y-2 mb-6 font-medium">
-          <label className="text-sm">Resolution</label>
-          <Select value={resolution} onValueChange={onResolutionChange}>
-            <SelectTrigger className="bg-offblack-secondary border-offblack text-white w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-[#1c1c1c] border-offblack-secondary">
-              <SelectItem value="1K">1K</SelectItem>
-              <SelectItem value="2K">2K</SelectItem>
-              <SelectItem value="3K">3K</SelectItem>
-              <SelectItem value="4K">4K</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      {/* Tools */}
-      {selectedModel === "gemini-3-pro-image-preview" && (
-        <div className="border-t border-[#3d3d3d] pt-6 pb-3">
-          <button
-            onClick={() => setShowTools(!showTools)}
-            className="flex items-center justify-between cursor-pointer w-full text-sm font-medium hover:text-gray-300 transition"
-          >
-            Tools
-            <ChevronDown
-              className={`w-4 h-4 transition-transform ${
-                showTools ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-          {showTools && (
-            <div className="flex justify-start items-center gap-2 text-sm mt-3 w-full">
-              <span className="flex flex-col justify-between items-start w-full">
-                Grounding with Google Search{" "}
-                {enableGrounding && (
-                  <span className="flex justify-center items-center gap-1 text-[11px]">
-                    Source: <Google className="size-2.5 mb-0.5" /> Google Search
-                  </span>
-                )}
-              </span>
-              <Switch
-                checked={enableGrounding}
-                onCheckedChange={onEnableGrounding}
-              />
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Advanced Settings */}
       <div className="border-t border-[#3d3d3d] pt-6">

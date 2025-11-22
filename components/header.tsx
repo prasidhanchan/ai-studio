@@ -14,11 +14,17 @@ import GitHub from "@/public/icons/github";
 interface HeaderProps {
   apiKey: string;
   handleSetApiKey: (key: string) => void;
+  model: string;
+  handleSetModel: (model: string) => void;
   isApiKeySet: boolean;
   temperature: number;
   setTemperature: (value: number) => void;
   aspectRatio: string;
   setAspectRatio: (value: string) => void;
+  resolution: string;
+  onResolutionChange: (resolution: string) => void;
+  enableGrounding: boolean;
+  onEnableGrounding: (enable: boolean) => void;
   stopSequences: string[];
   setStopSequences: (sequences: string[]) => void;
   outputLength: number;
@@ -32,11 +38,17 @@ interface HeaderProps {
 export function Header({
   apiKey,
   handleSetApiKey,
+  model,
+  handleSetModel,
   isApiKeySet,
   temperature,
   setTemperature,
   aspectRatio,
   setAspectRatio,
+  resolution,
+  onResolutionChange,
+  enableGrounding,
+  onEnableGrounding,
   stopSequences,
   setStopSequences,
   outputLength,
@@ -79,11 +91,17 @@ export function Header({
             <Sidebar
               apiKey={apiKey}
               onApiKeyChange={handleSetApiKey}
+              model={model}
+              onModelChange={handleSetModel}
               isApiKeySet={isApiKeySet}
               temperature={temperature}
               onTemperatureChange={setTemperature}
               aspectRatio={aspectRatio}
               onAspectRatioChange={setAspectRatio}
+              resolution={resolution}
+              onResolutionChange={onResolutionChange}
+              enableGrounding={enableGrounding}
+              onEnableGrounding={onEnableGrounding}
               stopSequences={stopSequences}
               onStopSequencesChange={setStopSequences}
               outputLength={outputLength}
