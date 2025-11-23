@@ -46,6 +46,10 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="apple-mobile-web-app-title" content="AI Studio" />
+        <meta
+          name="google-site-verification"
+          content="07EOtnGTuVPdL0Vl07jPXtRaSxrcm_qqddSBmdcc58g"
+        />
 
         {/* PNG */}
         <link rel="icon" type="image/png" sizes="16x16" href="/icon1.png" />
