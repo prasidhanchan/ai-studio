@@ -366,7 +366,6 @@ export function Sidebar({
             <SelectContent className="bg-[#1c1c1c] border-offblack-secondary">
               <SelectItem value="1K">1K</SelectItem>
               <SelectItem value="2K">2K</SelectItem>
-              <SelectItem value="3K">3K</SelectItem>
               <SelectItem value="4K">4K</SelectItem>
             </SelectContent>
           </Select>

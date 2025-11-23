@@ -28,10 +28,13 @@ export const metadata: Metadata = {
     type: "website",
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+    icon: "/icon1.png",
+    apple: "/apple-icon.png",
   },
+  alternates: {
+    canonical: "/",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -42,9 +45,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Android Chrome */}
-        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="apple-mobile-web-app-title" content="AI Studio" />
+
+        {/* PNG */}
+        <link rel="icon" type="image/png" sizes="16x16" href="/icon1.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icon2.png" />
+        <link rel="icon" type="image/png" sizes="96x96" href="/icon3.png" />
+
+        {/* SVG */}
+        <link rel="icon" type="image/svg+xml" href="/icon0.svg" />
       </head>
+
       {/* Vercel Analytics */}
       <Analytics />
       <body className={`${poppins.className} antialiased`}>{children}</body>
